@@ -3,236 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FrameX - Professional Slide Generator</title>
+    <title>FrameX Carousel Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #f8f9fa;
-            --text: #0a0a0a;
             --accent: #ff6b4a;
-            --accent-soft: rgba(255, 107, 74, 0.1);
-            --dark-bg: #0d0d0e;
-            --glass: rgba(255, 255, 255, 0.8);
+            --dark: #0f0f10;
+            --light: #f8f9fa;
         }
 
         body {
             font-family: 'Cairo', sans-serif;
-            background-color: #222;
+            background-color: #1a1a1a;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            color: white;
         }
 
-        /* حاوية الصور بنسبة 4:5 لإنستغرام */
-        .slide-container {
-            width: 540px; /* مقاس مثالي للعرض */
-            height: 675px; 
-            background: var(--bg);
+        /* حاوية الصور بنسبة 4:5 الدقيقة لإنستغرام */
+        #capture-area {
+            width: 1080px; /* دقة عالية 2K */
+            height: 1350px;
+            background: var(--light);
             position: relative;
             overflow: hidden;
-            border-radius: 0; /* للصور يفضل حواف حادة أو بسيطة حسب الرغبة */
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
         }
 
         .slide {
             display: none;
             width: 100%;
             height: 100%;
-            padding: 60px 40px;
+            padding: 100px 80px;
             position: relative;
             flex-direction: column;
-            z-index: 10;
+            justify-content: center;
         }
 
         .slide.active { display: flex; }
 
-        /* العناصر الخلفية */
-        .grid-bg {
+        /* ميزة Glassmorphism */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-right: 15px solid var(--accent);
+            padding: 50px;
+            border-radius: 40px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+            transform: rotate(-1.5deg); /* ميلان حركي */
+            z-index: 10;
+        }
+
+        .slide-dark .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: #efefef;
+        }
+
+        /* العناصر العائمة */
+        .floating-shape {
             position: absolute;
-            inset: 0;
-            background-image: radial-gradient(circle, #ddd 1px, transparent 1px);
-            background-size: 30px 30px;
-            opacity: 0.3;
-            z-index: 0;
+            background: var(--accent);
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.2;
+            z-index: 1;
         }
 
-        .bg-text-giant {
-            position: absolute;
-            font-size: 180px;
-            font-weight: 900;
-            color: rgba(0,0,0,0.04);
-            bottom: 50px;
-            right: -20px;
-            line-height: 1;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* Glass Cards */
-        .glass-card {
-            background: var(--glass);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255,255,255,0.4);
-            border-right: 6px solid var(--accent);
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
-            margin-top: 20px;
-            transform: rotate(-1deg);
-        }
-
-        /* Typography */
-        .h1-hero {
-            font-size: 52px;
-            font-weight: 900;
-            line-height: 1.2;
-            color: var(--text);
-            margin-bottom: 15px;
-        }
-
-        .accent { color: var(--accent); }
-
-        .tag {
+        /* التباين والنصوص */
+        .h1-bold { font-size: 100px; font-weight: 900; line-height: 1.1; margin-bottom: 40px; }
+        .accent-text { color: var(--accent); }
+        
+        .tag-label {
             background: var(--accent);
             color: white;
-            padding: 4px 15px;
-            border-radius: 50px;
-            font-size: 14px;
+            padding: 10px 30px;
+            border-radius: 100px;
+            font-size: 28px;
             font-weight: 700;
             display: inline-block;
-            margin-bottom: 20px;
+            margin-bottom: 40px;
         }
 
-        /* Shapes */
-        .floating-circle {
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            background: var(--accent);
-            filter: blur(80px);
-            opacity: 0.15;
-            z-index: 0;
+        /* أدوات التحكم (لن تظهر في الصورة) */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
         }
-
-        /* Dark Slide Adjustments */
-        .slide-dark { background: var(--dark-bg); color: white; }
-        .slide-dark .h1-hero { color: white; }
-        .slide-dark .glass-card { background: rgba(255,255,255,0.05); border-right-color: var(--accent); color: #ccc; }
-        .slide-dark .grid-bg { opacity: 0.05; }
-        .slide-dark .bg-text-giant { color: rgba(255,255,255,0.03); }
-
-        /* Navigation for preview */
-        .nav-btns { position: fixed; bottom: 20px; display: flex; gap: 10px; z-index: 1000; }
-        button { background: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn {
+            background: white;
+            color: black;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-save { background: var(--accent); color: white; }
     </style>
 </head>
 <body>
 
-    <div class="nav-btns">
-        <button onclick="prev()">السابق</button>
-        <button onclick="next()">التالي</button>
-    </div>
-
-    <div class="slide-container">
-        
-        <div class="slide slide-dark active" id="s1">
-            <div class="floating-circle" style="top:-50px; left:-50px;"></div>
-            <div class="tag">FrameX Solution</div>
-            <h1 class="h1-hero">إعلانك يوصل..<br><span class="accent">بس ما يبيع؟</span></h1>
-            <p class="text-xl opacity-80">خلينا نحول صرفياتك إلى أرباح حقيقية بنظام أتمتة ذكي.</p>
-            <div class="mt-auto">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-1px bg-accent"></div>
-                    <span class="font-bold tracking-widest uppercase">Brand Strategy</span>
-                </div>
-            </div>
-            <div class="bg-text-giant">بيع</div>
+    <div id="capture-area">
+        <div class="slide slide-dark active" style="background: var(--dark);" id="s1">
+            <div class="floating-shape" style="width: 500px; height: 500px; top: -100px; left: -100px;"></div>
+            <div class="tag-label">FrameX . رؤية جديدة</div>
+            <h1 class="h1-bold">إعلانك يوصل..<br><span class="accent-text">بس ما يبيع؟</span></h1>
+            <p class="text-4xl opacity-70 leading-relaxed">خلينا نحول صرفياتك إلى أرباح حقيقية بنظام أتمتة ذكي يشتغل بدالك.</p>
         </div>
 
         <div class="slide" id="s2">
-            <div class="grid-bg"></div>
-            <div class="tag" style="background: #000;">المشكلة الأولى</div>
-            <h1 class="h1-hero">عرضك <span class="accent">"عادي"</span></h1>
-            <div class="glass-card">
-                <p class="text-lg font-bold text-slate-700 leading-relaxed">
-                    الزبون العراقي ذكي.. إذا شاف عرضك مثل مية غيرك، راح يعبرك. إحنا نساعدك تصيغ "عرض ما يترفض".
+            <div class="floating-shape" style="width: 400px; height: 400px; bottom: -50px; right: -50px; opacity: 0.1;"></div>
+            <div class="tag-label" style="background: #000;">واقع السوق</div>
+            <h1 class="h1-bold">عرضك <span class="accent-text">"عادي"</span></h1>
+            <div class="glass-panel">
+                <p class="text-5xl font-bold leading-tight">
+                    الزبون العراقي ذكي.. إذا شاف عرضك مثل مية غيرك، راح يعبرك. إحنا نصيغ لك "عرض ما يترفض".
                 </p>
             </div>
-            <div class="mt-8 flex gap-2">
-                <div class="w-2 h-2 rounded-full bg-accent"></div>
-                <div class="w-10 h-2 rounded-full bg-slate-200"></div>
-                <div class="w-2 h-2 rounded-full bg-slate-200"></div>
-            </div>
-            <div class="bg-text-giant">فرصة</div>
         </div>
 
-        <div class="slide slide-dark" id="s3">
-            <div class="floating-circle" style="bottom:-50px; right:-50px;"></div>
-            <div class="tag">عامل الوقت</div>
-            <h1 class="h1-hero">تأخرت دقيقة؟<br><span class="accent">طار الزبون.</span></h1>
-            <div class="glass-card" style="transform: rotate(1deg);">
-                <p class="text-lg">نظامنا يخلي الرد فوري 24/7. حتى وأنت نايم، البوت يستقبل الطلبات ويثبتها.</p>
-            </div>
-            <div class="bg-text-giant">وقت</div>
-        </div>
-
-        <div class="slide" id="s4">
-            <div class="grid-bg"></div>
-            <div class="tag">Branding</div>
-            <h1 class="h1-hero">صفحتك هي <span class="accent">محلّك.</span></h1>
-            <p class="text-lg opacity-70">إذا التصميم تعبان والمنشورات مخربطة، الزبون راح يخاف يحول فلوس أو يطلب.</p>
-            <div class="grid grid-cols-2 gap-4 mt-6">
-                <div class="p-4 bg-white border border-slate-100 rounded-xl shadow-sm text-center">
-                    <span class="block text-accent font-black text-2xl">90%</span>
-                    <span class="text-xs font-bold">من قرار الشراء بصري</span>
-                </div>
-                <div class="p-4 bg-slate-900 text-white rounded-xl shadow-sm text-center">
-                    <span class="block text-accent font-black text-2xl">Instant</span>
-                    <span class="text-xs font-bold">ثقة فورية</span>
-                </div>
+        <div class="slide slide-dark" style="background: var(--dark);" id="s3">
+            <div class="tag-label">السرعة هي المفتاح</div>
+            <h1 class="h1-bold">تأخرت دقيقة؟<br><span class="accent-text">طار الزبون.</span></h1>
+            <div class="glass-panel" style="transform: rotate(1.5deg);">
+                <p class="text-4xl leading-relaxed">نظامنا يخلي الرد فوري 24/7. حتى وأنت نايم، البوت يستقبل الطلبات ويثبتها تلقائياً.</p>
             </div>
         </div>
+    </div>
 
-        <div class="slide slide-dark" id="s5">
-            <div class="tag">الخلاصة</div>
-            <h1 class="h1-hero">حول صفحتك لـ<br><span class="accent">ماكينة مبيعات.</span></h1>
-            <ul class="space-y-4 mt-6">
-                <li class="flex items-center gap-3">
-                    <div class="w-6 h-6 rounded-full bg-accent flex items-center justify-center text-xs">✓</div>
-                    <span class="font-bold">أتمتة كاملة للردود</span>
-                </li>
-                <li class="flex items-center gap-3">
-                    <div class="w-6 h-6 rounded-full bg-accent flex items-center justify-center text-xs">✓</div>
-                    <span class="font-bold">هوية بصرية تفرض هيبتها</span>
-                </li>
-                <li class="flex items-center gap-3">
-                    <div class="w-6 h-6 rounded-full bg-accent flex items-center justify-center text-xs">✓</div>
-                    <span class="font-bold">إدارة حملات إعلانية ذكية</span>
-                </li>
-            </ul>
-            <div class="bg-text-giant">نظام</div>
-        </div>
-
-        <div class="slide" id="s6">
-            <div class="grid-bg"></div>
-            <div class="my-auto text-center">
-                <h1 class="h1-hero">جاهز تبدأ <span class="accent">التغيير؟</span></h1>
-                <p class="mb-8 font-bold opacity-60">لا تضيع ميزانية إعلاناتك على الفاضي.</p>
-                <div class="p-6 bg-white shadow-2xl rounded-3xl border-2 border-accent inline-block transform -rotate-2">
-                    <p class="text-sm font-bold">ارسل كلمة <span class="accent text-xl">"نظام"</span> للخاص</p>
-                </div>
-                <div class="mt-10 text-xs font-black tracking-widest text-slate-400">FRAMEX . 2026</div>
-            </div>
-        </div>
-
+    <div class="controls">
+        <div class="btn" onclick="prev()">السابق</div>
+        <div class="btn" onclick="next()">التالي</div>
+        <div class="btn btn-save" onclick="downloadSlide()">تحميل كصورة PNG</div>
     </div>
 
     <script>
         let current = 1;
-        const total = 6;
+        const total = 3;
 
         function update() {
             document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
@@ -242,10 +160,19 @@
         function next() { if(current < total) { current++; update(); } }
         function prev() { if(current > 1) { current--; update(); } }
 
-        document.addEventListener('keydown', e => {
-            if(e.key === 'ArrowRight') next();
-            if(e.key === 'ArrowLeft') prev();
-        });
+        // ميزة التحميل التلقائي كصورة بجودة عالية
+        function downloadSlide() {
+            const area = document.getElementById('capture-area');
+            html2canvas(area, {
+                scale: 2, // مضاعفة الدقة للطباعة أو النشر بدقة 4K
+                useCORS: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `FrameX-Slide-${current}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
     </script>
 </body>
 </html>
