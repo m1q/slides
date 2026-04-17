@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FrameX - Iraqi Dialect Presentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f7f7f5;
+            --text: #111111;
+            --muted: #5f6368;
+            --accent: #ff6b4a;
+            --line: rgba(17,17,17,0.06);
+            --dark-bg: #0f0f10;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #dcdcdc;
+            color: var(--text);
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            user-select: none;
+        }
+
+        /* الحاوية الرئيسية بنسبة 4:5 */
+        .slide-container {
+            aspect-ratio: 4 / 5;
+            height: 95vh;
+            max-width: 95vw;
+            background: var(--bg);
+            position: relative;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.2);
+            overflow: hidden;
+            border-radius: 24px;
+        }
+
+        .grid-lines {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(var(--line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--line) 1px, transparent 1px);
+            background-size: 72px 72px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .slide {
+            display: none;
+            position: absolute;
+            inset: 0;
+            padding: 100px 48px 120px 48px; /* مساحة كافية للعناصر الثابتة */
+            flex-direction: column;
+            justify-content: center; /* توسيط المحتوى عمودياً */
+        }
+
+        .slide.active {
+            display: flex;
+            animation: slideFade 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        @keyframes slideFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* مناطق التنقل */
+        .nav-area {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 20%;
+            z-index: 100;
+            cursor: pointer;
+        }
+        .nav-area.right { right: 0; }
+        .nav-area.left { left: 0; }
+
+        /* العناصر الثابتة العلويّة */
+        .top-meta {
+            position: absolute;
+            top: 40px;
+            left: 48px;
+            right: 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 50;
+        }
+
+        .label-tag {
+            font-weight: 800;
+            font-size: 14px;
+            padding: 6px 16px;
+            background: var(--accent);
+            color: white;
+            border-radius: 8px;
+        }
+
+        .counter-text {
+            font-weight: 800;
+            color: var(--muted);
+            font-size: 20px;
+        }
+
+        /* التنسيقات الخاصة بالشرائح المظلمة */
+        .slide-dark { background: var(--dark-bg); color: white; }
+        .slide-dark .grid-lines { background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); }
+        .slide-dark .counter-text { color: rgba(255,255,255,0.5); }
+
+        /* المحتوى */
+        .bg-word {
+            position: absolute;
+            font-size: 180px;
+            font-weight: 900;
+            color: rgba(0,0,0,0.03);
+            right: -20px;
+            bottom: 120px;
+            line-height: 1;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .slide-dark .bg-word { color: rgba(255,255,255,0.02); }
+
+        .title-main {
+            font-size: 58px;
+            font-weight: 900;
+            line-height: 1.1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .accent-text { color: var(--accent); }
+
+        .mini-label {
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            border: 1px solid var(--line);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            margin-top: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* العناصر الثابتة السفلية */
+        .footer-nav {
+            position: absolute;
+            bottom: 40px;
+            left: 48px;
+            right: 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 50;
+        }
+
+        .progress-bar {
+            display: flex;
+            gap: 8px;
+        }
+
+        .progress-segment {
+            height: 6px;
+            width: 30px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
+            transition: all 0.4s;
+        }
+        .slide-dark .progress-segment { background: rgba(255,255,255,0.1); }
+        .progress-segment.active { background: var(--accent); width: 50px; }
+
+        .brand-name { font-weight: 900; font-size: 24px; }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container" id="main-container">
+        <!-- مناطق النقر المخفية للتنقل -->
+        <div class="nav-area right" onclick="prevSlide()"></div>
+        <div class="nav-area left" onclick="nextSlide()"></div>
+
+        <!-- معلومات علوية ثابتة -->
+        <div class="top-meta">
+            <div class="label-tag">رؤية FrameX</div>
+            <div class="counter-text" id="slide-num">1/7</div>
+        </div>
+
+        <!-- الشريحة 1: الغلاف -->
+        <div class="slide slide-dark active" id="slide-1">
+            <div class="absolute inset-0 z-0">
+                <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?q=80&w=1080" class="w-full h-full object-cover opacity-40">
+                <div class="absolute inset-0 bg-gradient-to-t from-[#0f0f10] via-transparent to-transparent"></div>
+            </div>
+            <div class="mt-auto relative z-10 space-y-4 mb-10">
+                <p class="mini-label">دليلك الكامل للأتمتة</p>
+                <h1 class="title-main">نسوي نظام<br><span class="accent-text">يبيع</span> بدالك.</h1>
+                <p class="text-xl opacity-70 max-w-md">نظام FrameX يساعدك تحول المتابعين لزبائن حقيقيين بضغطة زر.</p>
+            </div>
+        </div>
+
+        <!-- الشريحة 2: الواقع -->
+        <div class="slide" id="slide-2">
+            <div class="grid-lines"></div>
+            <div class="bg-word">واقع</div>
+            <div class="z-10">
+                <p class="mini-label">الحقيقة المرة</p>
+                <h1 class="title-main" style="font-size: 52px;">فيسبوك أخذ فلوسه..<br><span class="accent-text">والنتيجة؟</span></h1>
+                <div class="content-card bg-white/80 backdrop-blur-sm">
+                    <p class="text-lg leading-relaxed font-semibold">فيسبوك شغلته يوصل إعلانك للناس، وهاي سواها. بس إذا المحتوى مو "مغري" والرد متأخر، الفلوس راحت بالشط.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- الشريحة 3: المشكلة 1 -->
+        <div class="slide" id="slide-3">
+            <div class="grid-lines"></div>
+            <div class="z-10">
+                <p class="mini-label">أول مشكلة</p>
+                <h1 class="title-main" style="font-size: 52px;">عرضك <span class="accent-text">"ما يغري"</span></h1>
+                <div class="content-card">
+                    <p class="mb-6 opacity-70 text-lg">الزبون العراقي ذكي، إذا ما شاف "لُقطة" أو قيمة حقيقية، راح يعبرك للمنافس.</p>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3 font-bold text-xl"><span class="w-3 h-3 bg-accent rounded-full"></span> سعرك نفس غيرك</div>
+                        <div class="flex items-center gap-3 font-bold text-xl"><span class="w-3 h-3 bg-accent rounded-full"></span> فائدة المنتج مو واضحة</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الشريحة 4: المشكلة 2 -->
+        <div class="slide" id="slide-4">
+            <div class="grid-lines"></div>
+            <div class="z-10">
+                <p class="mini-label">ثاني مشكلة</p>
+                <h1 class="title-main" style="font-size: 52px;">دوخة بطلب <span class="accent-text">الشراء</span></h1>
+                <div class="space-y-4 mt-6">
+                    <div class="flex gap-4 p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                        <div class="text-3xl font-black text-accent opacity-30">01</div>
+                        <div><h3 class="font-black text-xl">تأخر بالرد</h3><p class="opacity-60">الزبون العراقي ما يحب ينتظر.</p></div>
+                    </div>
+                    <div class="flex gap-4 p-5 bg-slate-900 text-white rounded-2xl shadow-lg">
+                        <div class="text-3xl font-black text-accent opacity-60">02</div>
+                        <div><h3 class="font-black text-xl">خطوات هواية</h3><p class="opacity-60">لازم يملي استمارة ويتصل يله يطلب.</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الشريحة 5: المشكلة 3 -->
+        <div class="slide slide-dark" id="slide-5">
+            <div class="absolute inset-0">
+                <img src="https://images.unsplash.com/photo-1512428559087-560fa5ceab42?q=80" class="w-full h-full object-cover opacity-20">
+            </div>
+            <div class="mt-auto relative z-10 pb-10">
+                <p class="mini-label">ثالث مشكلة</p>
+                <h1 class="title-main">صفحتك <br><span class="accent-text">"تخوّف"</span></h1>
+                <p class="mt-4 text-xl opacity-70 leading-relaxed">الزبون قبل ما يدفع، يشوف "منو أنت". إذا شافها فقيرة وما بيها تفاصيل، راح ينسحب ويخاف يطلب.</p>
+            </div>
+        </div>
+
+        <!-- الشريحة 6: الحل -->
+        <div class="slide" id="slide-6">
+            <div class="grid-lines"></div>
+            <div class="z-10">
+                <p class="mini-label">شلون تنجح؟</p>
+                <h1 class="title-main" style="font-size: 52px;">إعلانك لازم يصير <span class="accent-text">"ماكينة"</span></h1>
+                <div class="mt-8 space-y-4">
+                    <div class="p-5 bg-accent/10 border-r-4 border-accent font-bold text-xl">استهدف ناس محتاجينك فعلاً</div>
+                    <div class="p-5 bg-slate-100 border-r-4 border-slate-400 font-bold text-xl">قدم عرض "ما يترفض"</div>
+                    <div class="p-5 bg-slate-100 border-r-4 border-slate-400 font-bold text-xl">خلي البوت يرد بمكانك 24 ساعة</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الشريحة 7: النهاية -->
+        <div class="slide slide-dark" id="slide-7">
+            <div class="grid-lines"></div>
+            <div class="bg-word">الآن</div>
+            <div class="my-auto text-center space-y-8 z-10">
+                <h1 class="title-main">لا تذب فلوسك<br><span class="accent-text">بالشط!</span></h1>
+                <div class="space-y-2 opacity-80 text-2xl font-bold">
+                    <p>رتّب صفحتك • قوّي عرضك</p>
+                    <p>وخلي الباقي علينا</p>
+                </div>
+                <button class="bg-accent text-white px-12 py-5 rounded-2xl font-black text-2xl shadow-2xl hover:scale-105 transition mt-6">ابدأ ويانا اليوم</button>
+            </div>
+        </div>
+
+        <!-- التذييل الثابت -->
+        <div class="footer-nav">
+            <div class="brand-name">FrameX<span class="accent-text">.</span></div>
+            <div class="progress-bar" id="progress-container"></div>
+        </div>
+    </div>
+
+    <script>
+        let current = 1;
+        const total = 7;
+
+        // إنشاء شريط التقدم
+        const pContainer = document.getElementById('progress-container');
+        for(let i=1; i<=total; i++) {
+            const seg = document.createElement('div');
+            seg.className = `progress-segment ${i===1?'active':''}`;
+            seg.id = `seg-${i}`;
+            pContainer.appendChild(seg);
+        }
+
+        function update() {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            const activeSlide = document.getElementById(`slide-${current}`);
+            activeSlide.classList.add('active');
+            
+            document.querySelectorAll('.progress-segment').forEach(s => s.classList.remove('active'));
+            document.getElementById(`seg-${current}`).classList.add('active');
+            
+            document.getElementById('slide-num').innerText = `${current}/${total}`;
+
+            // تحديث ألوان العلامة التجارية بناءً على نوع الشريحة
+            if(activeSlide.classList.contains('slide-dark')) {
+                document.querySelector('.brand-name').style.color = 'white';
+            } else {
+                document.querySelector('.brand-name').style.color = 'var(--text)';
+            }
+        }
+
+        function nextSlide() { if(current < total) { current++; update(); } }
+        function prevSlide() { if(current > 1) { current--; update(); } }
+
+        // دعم السحب (Swipe) للهواتف
+        let touchStartX = 0;
+        document.getElementById('main-container').addEventListener('touchstart', e => touchStartX = e.touches[0].clientX);
+        document.getElementById('main-container').addEventListener('touchend', e => {
+            let touchEndX = e.changedTouches[0].clientX;
+            if (touchStartX - touchEndX > 50) nextSlide();
+            if (touchEndX - touchStartX > 50) prevSlide();
+        });
+
+        // دعم الكيبورد
+        document.addEventListener('keydown', e => {
+            if(e.key === 'ArrowRight' || e.key === 'ArrowDown') nextSlide();
+            if(e.key === 'ArrowLeft' || e.key === 'ArrowUp') prevSlide();
+        });
+
+        update();
+    </script>
+</body>
+</html>
